@@ -3,6 +3,7 @@ const router = express.Router();
 const { AuthService } = require("../services/AuthentificationService");
 const {UserService} = require("../services/UserService")
 const { TokenJWT} = require('../models');
+const db = require("../models")
 
 
 router.post('/login', async (req, res) => {
@@ -34,6 +35,34 @@ router.post('/login', async (req, res) => {
     }
 });
 
+router.post('/deactivate_token', async (req, res) => {
+    try {
+      const { userId } = req.body;
+      
+      // Validation de l'entrée
+      if (!userId) {
+        return res.status(400).json({ message: 'User ID is required' });
+      }
+  
+      // Obtention du refresh token associé à l'utilisateur
+      const refreshToken = await AuthService.getRefreshToken(userId);
+      
+      if (!refreshToken) {
+        return res.status(404).json({ message: 'Token not found or already deactivated' });
+      }
+  
+      // Mise à jour du token pour le désactiver
+      await db.TokenJWT.update(
+        { isActive: 0 },
+        { where: { id: refreshToken.id } }
+      );
+  
+      res.json({ message: 'Token deactivated successfully' });
+    } catch (error) {
+      console.error('Error deactivating token:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    }
+  });
 
 router.post('/refresh', async (req, res) => {
     const user = await UserService.getUser(req.body.email)
@@ -42,7 +71,7 @@ router.post('/refresh', async (req, res) => {
         return res.status(401).json({ message: 'Refresh token non trouvé dans la session' });
     }
 
-    const potentialUser = await AuthService.verifyToken(refreshToken);
+    const potentialUser = await AuthService.verifyToken(refreshToken.token);
     if (potentialUser) {
         const accessToken = await AuthService.createJWT(potentialUser.email);
         res.json({ accessToken });

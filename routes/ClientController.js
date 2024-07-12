@@ -1,17 +1,48 @@
 const express = require('express');
 const router = express.Router();
 const { Client } = require('../models');
+const db = require("../models")
 
-// Créer un utilisateur
-router.post('/clients', async (req, res) => {
+router.post('/add_client', async (req, res) => {
     try {
-        const client = await Client.create(req.body);
-        res.status(201).json(client);
+      const { nomClient, userId } = req.body;
+  
+      // Validation de l'entrée
+      if (!nomClient) {
+        return res.status(400).json({ message: 'Client name is required' });
+      }
+      if (!userId) {
+        return res.status(400).json({ message: 'User ID is required' });
+      }
+  
+      // Création du client
+      const client = await db.Client.create({
+        nom: nomClient,
+      });
+  
+      // Création de l'association client-utilisateur
+      const clientUser = await db.ClientUser.create({
+        ClientId: client.id,
+        UserId: userId,
+      });
+  
+      // Réponse réussie avec le client créé
+      res.status(201).json(client);
     } catch (error) {
-        res.status(400).json({ error: error.message });
+      // Gestion des erreurs spécifiques à Sequelize
+      if (error.name === 'SequelizeValidationError') {
+        return res.status(400).json({ message: 'Validation error', errors: error.errors });
+      }
+      if (error.name === 'SequelizeUniqueConstraintError') {
+        return res.status(400).json({ message: 'Unique constraint error', errors: error.errors });
+      }
+  
+      // Gestion des erreurs générales
+      console.error('Error creating client:', error);
+      res.status(500).json({ message: 'Internal server error' });
     }
-});
-
+  }
+);
 // Obtenir tous les utilisateurs
 router.get('/clients', async (req, res) => {
     try {
@@ -63,6 +94,32 @@ router.delete('/clients/:id', async (req, res) => {
         }
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+});
+
+router.post('/get_clients_from_user', async (req, res) => {
+    try {
+        const clients = await db.ClientUser.findAll({ where: { userId: req.body.userId } });
+        if (!clients || clients.length === 0) {
+            return res.status(404).json({ "message": "Aucun client associé trouvé" });
+        }
+
+        const listClients = [];
+        for (let index = 0; index < clients.length; index++) {
+            const client = await db.Client.findOne({ where: { id: clients[index].ClientId } });
+            if (client) {
+                listClients.push(client);
+            }
+        }
+
+        if (listClients.length === 0) {
+            return res.status(404).json({ "message": "Aucun client valide trouvé" });
+        }
+
+        res.status(200).json(listClients);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des clients:', error);
+        res.status(500).json({ "message": "Erreur serveur lors de la récupération des clients" });
     }
 });
 

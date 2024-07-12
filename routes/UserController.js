@@ -1,8 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { User ,Client,ClientUser} = require('../models');
-const auth = require('../middleware/auth');
-const db = require("../models")
+const { User } = require('../models');
 
 // Créer un utilisateur
 router.post('/users', async (req, res) => {
@@ -70,29 +68,6 @@ router.delete('/users/:id', async (req, res) => {
         }
     } catch (error) {
         res.status(500).json({ error: error.message });
-    }
-});
-
-router.get('/add_user', auth, async (req, res) => {
-    try {
-        const user = req.user; 
-
-        const client = await Client.create({
-            nom: req.body.name
-        });
-        // await db.redisClient.set(`client:${client.id}`, JSON.stringify(client));
-
-        const clientUser = await ClientUser.create({
-            ClientId: client.id,
-            UserId: user.id
-        });
-
-        // await db.redisClient.set(`clientUser:${clientUser.id}`, JSON.stringify(clientUser));
-
-        res.status(201).send(client);
-    } catch (err) {
-        console.log(err);
-        res.status(500).send("ERROR Can't create");
     }
 });
 
