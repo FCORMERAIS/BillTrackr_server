@@ -1,16 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { Facture } = require('../models');
-
-// Créer un utilisateur
-router.post('/factures', async (req, res) => {
-    try {
-        const facture = await Facture.create(req.body);
-        res.status(201).json(facture);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
-});
+const db = require("../models")
+const { ClientService } = require("../services/ClientService");
 
 // Obtenir tous les utilisateurs
 router.get('/factures', async (req, res) => {
@@ -65,5 +57,32 @@ router.delete('/factures/:id', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
+router.post('/add_facture', async (req, res) => {
+    try {
+        console.log(req.body.dateEcheance)
+        const client = await ClientService.getClient(req.body.clientName)
+        const facture = await db.Facture.create({
+            nom: req.body.nom,
+            remises: req.body.remise,
+            prixTotalTTC: req.body.prixtotalTTC,
+            dateEcheance: req.body.dateEcheance,
+            UserId: req.body.userId,
+            ClientId: client.id,
+          });
+        res.status(201).json(facture);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+})
+
+router.post('/get_facture_by_client', async (req, res) => {
+    try {
+        const factures = await db.Facture.findAll({ where: { ClientId: req.body.ClientId , UserId : req.body.UserId} });
+        res.status(201).json(factures);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+})
 
 module.exports = router  // Exportez router sous le nom factureRoutes

@@ -16,7 +16,7 @@ router.post('/add_client', async (req, res) => {
       }
   
       // Création du client
-      const client = await db.Client.create({
+      let client = await db.Client.create({
         nom: nomClient,
       });
   
@@ -34,15 +34,31 @@ router.post('/add_client', async (req, res) => {
         return res.status(400).json({ message: 'Validation error', errors: error.errors });
       }
       if (error.name === 'SequelizeUniqueConstraintError') {
-        return res.status(400).json({ message: 'Unique constraint error', errors: error.errors });
-      }
+        try {
+          // Recherche du client existant par nom
+          const client = await db.Client.findOne({ where: { nom: req.body.nomClient } });
   
+          // Si le client existe, on crée l'association client-utilisateur
+          if (client) {
+            const clientUser = await db.ClientUser.create({
+              ClientId: client.id,
+              UserId: req.body.userId,
+            });
+            return res.status(201).json(client);
+          }
+          // Si le client n'existe pas, retourner une erreur
+          return res.status(400).json({ message: 'Client not found for the given name' });
+        } catch (innerError) {
+          console.error('Error associating client with user:', innerError);
+          return res.status(500).json({ message: 'Internal server error during association' });
+        }
+      }
       // Gestion des erreurs générales
       console.error('Error creating client:', error);
       res.status(500).json({ message: 'Internal server error' });
     }
-  }
-);
+  });  
+
 // Obtenir tous les utilisateurs
 router.get('/clients', async (req, res) => {
     try {
@@ -96,6 +112,7 @@ router.delete('/clients/:id', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+
 
 router.post('/get_clients_from_user', async (req, res) => {
     try {

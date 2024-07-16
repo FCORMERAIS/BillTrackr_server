@@ -3,7 +3,6 @@ module.exports = (sequelize, DataTypes) => {
     nom: {
       type:DataTypes.STRING,
       allowNull:true,
-      unique:true,
     },
     remises: {
       type: DataTypes.FLOAT,
