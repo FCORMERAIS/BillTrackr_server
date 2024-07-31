@@ -78,7 +78,34 @@ router.post('/add_facture', async (req, res) => {
 
 router.post('/get_facture_by_client', async (req, res) => {
     try {
-        const factures = await db.Facture.findAll({ where: { ClientId: req.body.ClientId , UserId : req.body.UserId} });
+        const factures = await db.Facture.findAll({ where: { ClientId: req.body.ClientId , UserId : req.body.UserId ,isActive : 1} });
+        res.status(201).json(factures);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+})
+
+router.post('/delete_facture', async (req, res) => {
+    const Facture = await db.Facture.update(
+        { isActive: 0 },
+        { where: { id: req.body.factureId } }
+      );
+    res.status(201).json(Facture);
+
+})
+
+router.post('/paiement_valide', async (req, res) => {
+    const Facture = await db.Facture.update(
+        { haveBeenPaid: 1 },
+        { where: { id: req.body.factureId } }
+      );
+      res.status(201).json(Facture);
+    })
+
+router.post('/get_facture_history', async (req, res) => {
+    try {
+        const factures = await db.Facture.findAll({ where: {UserId : req.body.userId ,isActive : 0} });
+        console.log(factures)
         res.status(201).json(factures);
     } catch (error) {
         res.status(400).json({ error: error.message });

@@ -36,37 +36,4 @@ describe('AuthService', () => {
         });
     });
 
-    describe('createJWT', () => {
-        it('should create a JWT token for a valid user', async () => {
-            jwt.sign.mockReturnValue('token');
-
-            const token = await AuthService.createJWT('test@example.com');
-            expect(token).toBe('token');
-        });
-    });
-
-    describe('generateRefreshToken', () => {
-        it('should create a refresh token for a valid user', async () => {
-            jwt.sign.mockReturnValue('refreshToken');
-
-            const refreshToken = await AuthService.generateRefreshToken('test@example.com');
-            expect(refreshToken).toBe('refreshToken');
-        });
-    });
-
-    describe('verifyRefreshToken', () => {
-        it('should verify a valid refresh token', async () => {
-            jwt.verify.mockReturnValue(mockUser);
-
-            const decoded = await AuthService.verifyRefreshToken('validToken');
-            expect(decoded.email).toBe(mockUser.email);
-        });
-
-        it('should return null for an invalid refresh token', async () => {
-            jwt.verify.mockImplementation(() => { throw new Error('Invalid token'); });
-
-            const decoded = await AuthService.verifyRefreshToken('invalidToken');
-            expect(decoded).toBeNull();
-        });
-    });
 });

@@ -4,9 +4,17 @@ module.exports = (sequelize, DataTypes) => {
       type:DataTypes.STRING,
       allowNull:true,
     },
+    path: {
+      type:DataTypes.STRING,
+      allowNull:true,
+    },
     remises: {
       type: DataTypes.FLOAT,
       allowNull: true
+    },
+    haveBeenPaid : {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
     },
     prixTotalTTC: {
       type: DataTypes.FLOAT,
