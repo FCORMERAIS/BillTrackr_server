@@ -3,6 +3,10 @@ const router = express.Router();
 const { Facture } = require('../models');
 const db = require("../models")
 const { ClientService } = require("../services/ClientService");
+const multer = require('multer');
+const pdfPoppler = require('pdf-poppler');
+const path = require('path');
+
 
 // Obtenir tous les utilisateurs
 router.get('/factures', async (req, res) => {
@@ -60,7 +64,7 @@ router.delete('/factures/:id', async (req, res) => {
 
 router.post('/add_facture', async (req, res) => {
     try {
-        console.log(req.body.dateEcheance)
+        console.log(req.body)
         const client = await ClientService.getClient(req.body.clientName)
         const facture = await db.Facture.create({
             nom: req.body.nom,
@@ -69,6 +73,7 @@ router.post('/add_facture', async (req, res) => {
             dateEcheance: req.body.dateEcheance,
             UserId: req.body.userId,
             ClientId: client.id,
+            path : req.body.path,
           });
         res.status(201).json(facture);
     } catch (error) {
@@ -78,7 +83,7 @@ router.post('/add_facture', async (req, res) => {
 
 router.post('/get_facture_by_client', async (req, res) => {
     try {
-        const factures = await db.Facture.findAll({ where: { ClientId: req.body.ClientId , UserId : req.body.UserId ,isActive : 1} });
+        const factures = await db.Facture.findAll({ where: { ClientId: req.body.ClientId , UserId : req.body.UserId ,isActive : 1 , haveBeenPaid:0} });
         res.status(201).json(factures);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -104,12 +109,46 @@ router.post('/paiement_valide', async (req, res) => {
 
 router.post('/get_facture_history', async (req, res) => {
     try {
-        const factures = await db.Facture.findAll({ where: {UserId : req.body.userId ,isActive : 0} });
-        console.log(factures)
+        const factures = await db.Facture.findAll({ where: {UserId : req.body.userId ,haveBeenPaid : 1 , isActive : 1} });
         res.status(201).json(factures);
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
 })
 
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, 'uploads/'); // Le dossier où les fichiers seront stockés
+    },
+    filename: (req, file, cb) => {
+      cb(null, `${Date.now()}-${file.originalname}`); // Nommer les fichiers avec la date pour éviter les conflits
+    }
+});
+
+const upload = multer({ storage });
+
+router.post('/upload', upload.single('file'), (req, res) => {
+if (!req.file) {
+    return res.status(400).send({ message: 'Aucun fichier téléchargé' });
+}
+res.status(200).send({ message: 'Fichier téléchargé avec succès', file: req.file });
+});
+
+
+router.post('/get_pdf', async (req, res) => {
+    try {
+      const { factureId } = req.body;
+      const facture = await Facture.findByPk(factureId);
+      if (!facture || !facture.path) {
+        return res.status(404).json({ error: 'Facture non trouvée ou aucun fichier associé' });
+      }
+  
+      // Générer l'URL pour accéder au fichier PDF
+      const pdfUrl = `http://localhost:3001/uploads/${path.basename(facture.path)}`;
+      res.json({ pdfUrl });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
 module.exports = router  // Exportez router sous le nom factureRoutes

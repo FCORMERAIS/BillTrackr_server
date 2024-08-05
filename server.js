@@ -3,7 +3,7 @@ const cors = require("cors");
 const session = require("express-session"); 
 const {AllRoutes} = require("./routes/allRoutes")
 const db = require("./models")
-
+const path = require("path")
 
 const app = express();
 
@@ -20,6 +20,7 @@ app.use(session({
     
 app.use(express.json());
 app.use('/', AllRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // app.get('/cache', async (req, res) => {
 //     const key = 'client:1';    
