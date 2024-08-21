@@ -4,7 +4,6 @@ const { Facture } = require('../models');
 const db = require("../models")
 const { ClientService } = require("../services/ClientService");
 const multer = require('multer');
-const pdfPoppler = require('pdf-poppler');
 const path = require('path');
 
 
@@ -83,7 +82,7 @@ router.post('/add_facture', async (req, res) => {
 
 router.post('/get_facture_by_client', async (req, res) => {
     try {
-        const factures = await db.Facture.findAll({ where: { ClientId: req.body.ClientId , UserId : req.body.UserId ,isActive : 1 , haveBeenPaid:0} });
+        const factures = await db.Facture.findAll({ where: { ClientId: req.body.ClientId , UserId : req.body.UserId ,isActive : 1 } });
         res.status(201).json(factures);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -91,6 +90,7 @@ router.post('/get_facture_by_client', async (req, res) => {
 })
 
 router.post('/delete_facture', async (req, res) => {
+    console.log(req.body)
     const Facture = await db.Facture.update(
         { isActive: 0 },
         { where: { id: req.body.factureId } }
@@ -109,7 +109,7 @@ router.post('/paiement_valide', async (req, res) => {
 
 router.post('/get_facture_history', async (req, res) => {
     try {
-        const factures = await db.Facture.findAll({ where: {UserId : req.body.userId ,haveBeenPaid : 1 , isActive : 1} });
+        const factures = await db.Facture.findAll({ where: {UserId : req.body.userId ,haveBeenPaid : 1 , isActive : 0} });
         res.status(201).json(factures);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -151,4 +151,4 @@ router.post('/get_pdf', async (req, res) => {
     }
   });
   
-module.exports = router  // Exportez router sous le nom factureRoutes
+module.exports = router

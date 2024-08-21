@@ -1,6 +1,6 @@
 const { AuthService } = require('../services/AuthentificationService');
 const db = require('../models');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 jest.mock('../models');
