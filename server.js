@@ -1,9 +1,11 @@
 const express = require("express");
 const cors = require("cors");
-const session = require("express-session"); 
-const {AllRoutes} = require("./routes/allRoutes")
-const db = require("./models")
-const path = require("path")
+const session = require("express-session");
+const { AllRoutes } = require("./routes/allRoutes");
+const db = require("./models");
+const path = require("path");
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swagger-output.json');
 
 const app = express();
 
@@ -14,13 +16,15 @@ app.use(cors({
 
 app.use(session({
     secret: 'GodsLovesChildren2010',
-    resave : true,
-    saveUninitialized : true,
+    resave: true,
+    saveUninitialized: true,
 }));
-    
+
 app.use(express.json());
 app.use('/', AllRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // app.get('/cache', async (req, res) => {
 //     const key = 'client:1';    
@@ -33,9 +37,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 //     }
 // });
 
-db.sequelize.sync().then((req) => {
+db.sequelize.sync().then(() => {
     app.listen(3001, () => {
-        console.log("the server is running at port 3001")
+        console.log("the server is running at port 3001");
     });
 });
-

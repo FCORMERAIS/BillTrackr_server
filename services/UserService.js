@@ -32,10 +32,35 @@ class UserService {
           return false
         }
       }
-    // async createClient(db,nom_client) {
-        
-    // }
+
+      
+    async validatePassword(password) {
+      const minLength = 12;
+      const hasUppercase = /[A-Z]/.test(password);
+      const hasLowercase = /[a-z]/.test(password);
+      const hasNumber = /[0-9]/.test(password);
+      const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password);
+  
+      if (password.length < minLength) {
+          return "Le mot de passe doit comporter au moins 12 caractères.";
+      }
+      if (!hasUppercase) {
+          return "Le mot de passe doit contenir au moins une majuscule.";
+      }
+      if (!hasLowercase) {
+          return "Le mot de passe doit contenir au moins une minuscule.";
+      }
+      if (!hasNumber) {
+          return "Le mot de passe doit contenir au moins un chiffre.";
+      }
+      if (!hasSpecialChar) {
+          return "Le mot de passe doit contenir au moins un caractère spécial.";
+      }
+      return null;
+  }
 }
+
+
 
 module.exports = {
     UserService : new UserService()

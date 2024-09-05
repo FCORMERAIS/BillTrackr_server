@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 jest.mock('../models');
-jest.mock('bcrypt');
+jest.mock('bcryptjs');
 jest.mock('jsonwebtoken');
 
 describe('AuthService', () => {
@@ -12,7 +12,11 @@ describe('AuthService', () => {
 
     beforeEach(() => {
         db.User.findOne.mockResolvedValue(mockUser);
-        bcrypt.compare.mockResolvedValue(true);
+        bcrypt.compare = jest.fn().mockResolvedValue(true);
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks(); // Clear mocks to prevent interference between tests
     });
 
     describe('authentificateUser', () => {
@@ -35,5 +39,4 @@ describe('AuthService', () => {
             expect(result).toBe(false);
         });
     });
-
 });

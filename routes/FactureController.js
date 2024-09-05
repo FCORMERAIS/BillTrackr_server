@@ -143,7 +143,6 @@ router.post('/get_pdf', async (req, res) => {
         return res.status(404).json({ error: 'Facture non trouvée ou aucun fichier associé' });
       }
   
-      // Générer l'URL pour accéder au fichier PDF
       const pdfUrl = `http://localhost:3001/uploads/${path.basename(facture.path)}`;
       res.json({ pdfUrl });
     } catch (error) {

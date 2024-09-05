@@ -4,7 +4,7 @@ const { ProfileService } = require("../services/ProfileService");
 const { AuthService } = require("../services/AuthentificationService");
 
 // Créer un utilisateur
-router.post('/change_profile', async (req, res) => {
+router.post('/change_profil', async (req, res) => {
     try {
         const new_adresse = req.body.adresse;
         const new_first_name = req.body.prenom;

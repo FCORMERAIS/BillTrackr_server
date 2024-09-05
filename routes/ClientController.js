@@ -3,6 +3,29 @@ const router = express.Router();
 const { Client } = require('../models');
 const db = require("../models")
 
+/**
+ * @openapi
+ * /clients:
+ *   get:
+ *     summary: Retrieve a list of clients
+ *     responses:
+ *       200:
+ *         description: A list of clients
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                     description: The client ID
+ *                   name:
+ *                     type: string
+ *                     description: The client name
+ */
+
 router.post('/add_client', async (req, res) => {
     try {
       const { nomClient, userId } = req.body;

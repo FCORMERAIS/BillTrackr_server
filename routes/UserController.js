@@ -1,14 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const { User } = require('../models');
+const {UserService} = require('../services/UserService')
 
 // Créer un utilisateur
 router.post('/users', async (req, res) => {
     try {
-        console.log(req.body)
-        if (req.body.password != req.body.confirmPassword) {
-            res.status(400).json({error:"vos 2 mots de passe ne sont pas identique !!"})
+        const { password, confirmPassword } = req.body;
+
+        if (password !== confirmPassword) {
+            return res.status(400).json({ error: "Vos deux mots de passe ne sont pas identiques !" });
         }
+        const passwordError = await UserService.validatePassword(password);
+        if (passwordError) {
+            return res.status(400).json({ error: passwordError });
+        }
+
         const user = await User.create(req.body);
         res.status(201).json(user);
     } catch (error) {
